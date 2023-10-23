@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sky's UPC Database</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  </head>
+  <body>
+    {{ navbar | safe }}
+    <div class="box m-4">
+      <!-- This is the pagination at the top -->
+      <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+        {% if previous_page or previous_page == 0 %} <a class="pagination-previous" href="/items?page={{ previous_page }}">Previous</a> {% endif %}
+        {% if next_page %} <a class="pagination-next" href="/items?page={{ next_page }}">Next Page</a> {% endif %}
+        <ul class="pagination-list">
+          {% if current_page != 0 %}
+            <li><a class="pagination-link" href="/items">1</a></li>
+            <li><span class="pagination-ellipsis">&hellip;</span></li>
+          {% endif %}
+          {% if previous_page and previous_page != 0 %} <li><a class="pagination-link" href="/items?page={{ previous_page }}">{{ previous_page|add:"1" }}</a></li> {% endif %}
+          <li><a class="pagination-link is-current" href="/items?page={{ current_page }}">{{ current_page|add:"1" }}</a></li>
+          {% if next_page and next_page != total_pages|add:"-1" %} <li><a class="pagination-link" href="/items?page={{ next_page }}">{{ next_page|add:"1" }}</a></li> {% endif %}
+          {% if current_page != total_pages %}
+            <li><span class="pagination-ellipsis">&hellip;</span></li>
+            <li><a class="pagination-link" href="/items?page={{ total_pages }}">{{ total_pages }}</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+      <!-- This is the actual table contents -->
+      <table class="table" style="margin: 3em auto;">
+        <thead>
+          <tr>
+            <th>UPC</th>
+            <th>Name</th>
+            <th>Quantity</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+          <tr>
+            <td>{{ row.upc }}</td>
+            <td>{{ row.name }}</td>
+            <td>{{ row.quantity }}{{ row.quantity_unit }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {{ footer | safe }}
+  </body>
+</html>

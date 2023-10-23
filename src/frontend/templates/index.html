@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sky's UPC Database</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  </head>
+  <body>
+    {{ navbar | safe }}
+    <div class="tile is-ancestor m-4">
+      <div class="tile" style="height:fit-content">
+        <div class="box">
+          <h1 class="title">Sky's UPC Database</h1>
+          <p>This is aiming to be a free (and open source!) UPC item database, which is simple to use.</p>
+          <p>The only limit is a 30/minute per IP ratelimit on the get endpoint, and a 10/minute per IP ratelimit on the post endpoint.</p>
+        </div>
+      </div>
+      <div class="tile" style="height:fit-content">
+        <div class="box">
+          <h1 class="title">There are currently {{ item_count }} items in the database.</h1>
+          <p>Click <a href="/items">here</a> to view them in a nice tabular format.</p>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;height:fit-content;bottom:0;width:100%;">
+      {{ footer | safe }}
+    </div>
+  </body>
+</html>
