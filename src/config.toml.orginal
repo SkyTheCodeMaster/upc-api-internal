@@ -1,0 +1,25 @@
+[data-source.nutritionix]
+  app_id = "your nutritionix app id"
+  app_key = "app key"
+
+[postgres]
+  url = "Your psql db"
+  password = "Your password"
+
+[log]
+  file = ""
+
+[srv]
+  host = "0.0.0.0"
+  port = 9000
+  # IPs exempt from ratelimiting.
+  ratelimit_exempt = [
+    "192.168.0.0/16",
+  ]
+
+[pages.items]
+  page_size = 50 # How many items are displayed on each of the /items page.
+
+[backup]
+  url = "https://paste.your.domain/api/paste/create_query/"
+  api_key = "Your API Key"
