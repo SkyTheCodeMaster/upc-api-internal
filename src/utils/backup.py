@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-import logging
 import asyncio
 import datetime
+import logging
 import tomllib
+from typing import TYPE_CHECKING
 
 import aiofiles
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
   from aiohttp import ClientSession

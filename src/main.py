@@ -10,8 +10,8 @@ import asyncpg
 import coloredlogs
 from aiohttp import web
 
-from routes.api_routes import api_routes
 from frontend.routes.frontend_routes import frontend_routes
+from routes.api_routes import api_routes
 from utils.backup import backup_scheduler
 
 LOGFMT = "[%(filename)s][%(asctime)s][%(levelname)s] %(message)s"
