@@ -82,6 +82,7 @@
         create_popup("Invalid length UPC!",true);
         button.classList.remove("is-loading");
         button.removeAttribute("disabled");
+        document.getElementById("upc-input").value = "";
         return;
       }
       // Now we want to try and get it from the API.
@@ -108,6 +109,7 @@
           create_popup("HTTP" + request.status + ": " + request.responseText, true);
           button.classList.remove("is-loading");
           button.removeAttribute("disabled");
+          document.getElementById("upc-input").value = "";
         }
       }
     }
