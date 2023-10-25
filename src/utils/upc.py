@@ -39,15 +39,15 @@ def convert_upce(code: str) -> str:
   if digits[0] not in [0,1]:
     raise Exception("Invalid start number")
 
-  last_digit = digits[-1]
+  end_digit = digits[6]
 
-  if (last_digit in [0,1,2]):
+  if (end_digit in [0,1,2]):
     tmpl = "{0}{1}{2}{6}0000{3}{4}{5}{7}".format(*digits)
-  elif (last_digit == 3):
+  elif (end_digit == 3):
     tmpl = "{0}{1}{2}{3}00000{4}{5}{7}".format(*digits)
-  elif (last_digit == 4):
+  elif (end_digit == 4):
     tmpl = "{0}{1}{2}{3}{4}00000{5}{7}".format(*digits)
-  elif (last_digit in [5,6,7,8,9]):
+  elif (end_digit in [5,6,7,8,9]):
     tmpl = "{0}{1}{2}{3}{4}{5}0000{6}{7}".format(*digits)
 
   if validate_upca(tmpl):
