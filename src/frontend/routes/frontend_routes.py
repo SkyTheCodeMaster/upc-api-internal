@@ -10,15 +10,24 @@ from django import setup as django_setup
 from django.conf import settings as django_settings
 from django.template import Context, Engine, Template
 
-from get_item import get_upc
-from handlers.local import get_local
+from utils.auth import HashedBasicAuth
 
 with open("config.toml") as f:
   config = tomllib.loads(f.read())
-  PAGE_SIZE = config["pages"]["items"]["page_size"]
+  ITEMS_PAGE_SIZE = config["pages"]["items"]["page_size"]
+  DATABASE_PAGE_SIZE = config["pages"]["database"]["page_size"]
+  FRONTEND_VERSION = config["pages"]["frontend_version"]
+  API_VERSION = config["srv"]["api_version"]
 
 django_settings.configure()
 django_setup()
+
+NAV_CTX = Context({
+  "FRONTEND_VERSION": FRONTEND_VERSION,
+  "API_VERSION": API_VERSION
+})
+
+auth = HashedBasicAuth()
 
 frontend_routes = web.RouteTableDef()
 
@@ -61,8 +70,8 @@ async def get_root(request: web.Request) -> web.Response:
       count_cache_time = current_time
 
   ctx_dict = {
-    "navbar": sup_templates["nav/navbar.html"].source,
-    "footer": sup_templates["nav/footer.html"].source,
+    "navbar": sup_templates["nav/navbar.html"].render(NAV_CTX),
+    "footer": sup_templates["nav/footer.html"].render(NAV_CTX),
     "item_count": count_cache
   }
 
@@ -82,7 +91,7 @@ async def get_items(request: web.Request) -> web.Response:
   if (0>page):
     return web.Response(status=400,body="page must be positive.")
 
-  offset = page*PAGE_SIZE
+  offset = page*ITEMS_PAGE_SIZE
 
   current_time = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
 
@@ -92,17 +101,17 @@ async def get_items(request: web.Request) -> web.Response:
       count_cache = (await conn.fetchrow("SELECT count(*) FROM Items"))["count"]
       count_cache_time = current_time
 
-    records = await conn.fetch("SELECT * FROM Items LIMIT $1 OFFSET $2", PAGE_SIZE, offset)
+    records = await conn.fetch("SELECT * FROM Items LIMIT $1 OFFSET $2", ITEMS_PAGE_SIZE, offset)
 
-  total_pages = (count_cache // PAGE_SIZE)
+  total_pages = (count_cache // ITEMS_PAGE_SIZE)
 
   quan = lambda x,y: x if x is not None else y
 
   rows = [{"upc":record["upc"],"name":record["name"],"quantity":quan(record["quantity"],"Unknown"),"quantity_unit":quan(record["quantityunit"],"")} for record in records]
 
   ctx_dict = {
-    "navbar": sup_templates["nav/navbar.html"].source,
-    "footer": sup_templates["nav/footer.html"].source,
+    "navbar": sup_templates["nav/navbar.html"].render(NAV_CTX),
+    "footer": sup_templates["nav/footer.html"].render(NAV_CTX),
     "rows": rows,
     "current_page": page,
     "total_pages": total_pages
@@ -128,8 +137,8 @@ async def get_lookup(request: web.Request) -> web.Response:
       count_cache_time = current_time
 
   ctx_dict = {
-    "navbar": sup_templates["nav/navbar.html"].source,
-    "footer": sup_templates["nav/footer.html"].source,
+    "navbar": sup_templates["nav/navbar.html"].render(NAV_CTX),
+    "footer": sup_templates["nav/footer.html"].render(NAV_CTX),
     "item_count": count_cache
   }
 
@@ -149,11 +158,11 @@ async def get_database(request: web.Request) -> web.Response:
   if (0>page):
     return web.Response(status=400,body="page must be positive.")
 
-  offset = page*PAGE_SIZE
+  offset = page*DATABASE_PAGE_SIZE
 
   async with pool.acquire() as conn:
     total_backups = (await conn.fetchrow("SELECT count(*) FROM Backups"))["count"]
-    records = await conn.fetch("SELECT * FROM Backups LIMIT $1 OFFSET $2", PAGE_SIZE, offset)
+    records = await conn.fetch("SELECT * FROM Backups LIMIT $1 OFFSET $2", DATABASE_PAGE_SIZE, offset)
     db_size = (await conn.fetchrow("SELECT pg_size_pretty ( pg_database_size ($1 ) );", "upc_database"))["pg_size_pretty"]
 
     current_time = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
@@ -162,7 +171,7 @@ async def get_database(request: web.Request) -> web.Response:
       count_cache = (await conn.fetchrow("SELECT count(*) FROM Items"))["count"]
       count_cache_time = current_time
 
-  total_pages = (total_backups // PAGE_SIZE)
+  total_pages = (total_backups // DATABASE_PAGE_SIZE)
 
   # Really weird date handling stuff
   def suffix(x):
@@ -182,8 +191,8 @@ async def get_database(request: web.Request) -> web.Response:
   rows = [{"id": record["pasteid"], "date": parse_date(record["date"])} for record in records]
 
   ctx_dict = {
-    "navbar": sup_templates["nav/navbar.html"].source,
-    "footer": sup_templates["nav/footer.html"].source,
+    "navbar": sup_templates["nav/navbar.html"].render(NAV_CTX),
+    "footer": sup_templates["nav/footer.html"].render(NAV_CTX),
     "rows": rows,
     "current_page": page,
     "total_pages": total_pages,
@@ -198,3 +207,22 @@ async def get_database(request: web.Request) -> web.Response:
     ctx_dict["next_page"] = page + 1
 
   return web.Response(body=templates["database.html"].render(Context(ctx_dict)), content_type="text/html")
+
+@frontend_routes.get("/admin")
+@auth.required
+async def get_admin(request: web.Request) -> web.Response:
+  ctx_dict = {
+    "navbar": sup_templates["nav/navbar.html"].render(NAV_CTX),
+    "footer": sup_templates["nav/footer.html"].render(NAV_CTX),
+  }
+
+  return web.Response(body=templates["administration.html"].render(Context(ctx_dict)), content_type="text/html")
+
+@frontend_routes.get("/publish")
+async def get_publish(request: web.Request) -> web.Response:
+  ctx_dict = {
+    "navbar": sup_templates["nav/navbar.html"].render(NAV_CTX),
+    "footer": sup_templates["nav/footer.html"].render(NAV_CTX),
+  }
+
+  return web.Response(body=templates["publish.html"].render(Context(ctx_dict)), content_type="text/html")

@@ -38,7 +38,7 @@ async def get_api_upc(request: web.Request) -> web.Response:
   else:
     return web.Response(status=404)
   
-@api_routes.post("/api/upc/{upc:\d+}")
+@api_routes.post("/api/upc/")
 @limiter.limit("10/minute")
 async def post_api_upc(request: web.Request) -> web.Response:
   pool = request.app.pool
@@ -51,7 +51,6 @@ async def post_api_upc(request: web.Request) -> web.Response:
   if len(str(upc)) == 8:
     converted=True
     upc = convert_upce(upc)
-
   if not validate_upca(upc):
     return web.Response(status=400,body=f"Invalid UPC-A.;Converted:{converted}")
   

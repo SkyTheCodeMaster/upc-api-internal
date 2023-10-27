@@ -28,12 +28,14 @@
         </ul>
       </nav>
       <!-- This is the actual table contents -->
-      <table class="table" style="margin: 3em auto;">
+      <table class="table is-striped is-bordered" style="margin: 3em auto;">
         <thead>
           <tr>
             <th>UPC</th>
             <th>Name</th>
             <th>Quantity</th>
+            <th>View</th>
+            <th>Edit</th>
           </tr>
         </thead>
         <tbody>
@@ -42,6 +44,8 @@
             <td>{{ row.upc }}</td>
             <td>{{ row.name }}</td>
             <td>{{ row.quantity }}{{ row.quantity_unit }}</td>
+            <td><button class="button is-success is-small" onclick="window.location='/lookup#{{ row.upc }}'">View</button></td>
+            <td><button class="button is-link is-small" onclick="window.location='/publish#{{ row.upc }}'">Edit</button></td>
           </tr>
           {% endfor %}
         </tbody>

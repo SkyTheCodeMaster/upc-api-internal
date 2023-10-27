@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sky's UPC Database</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/node-forge@1.0.0/dist/forge.min.js" async></script>
+  </head>
+  <body>
+    {{ navbar | safe }}
+    <div class="box">
+      <div class="columns">
+        <div class="column is-narrow">
+          <div class="box">
+            <div class="buttons">
+              <button class="button" onclick="db_backup();">Backup Database</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="position:absolute;height:fit-content;bottom:0;width:100%;">
+      {{ footer | safe }}
+    </div>
+    <script>
+      function set_cookie(name, value, expire) {
+        const d = new Date();
+        d.setTime(d.getTime() + (expire*24*60*60*1000));
+        let expires = "expires="+ d.toUTCString();
+        document.cookie = name + "=" + value + ";" + expires + ";path=/";
+      }
+
+      function get_cookie(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(let i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return null;
+      }
+
+      function login() {
+        if (!get_cookie("Authorization")) {
+          var username = prompt("Enter your username");
+          var password = prompt("Enter your password");
+          var authentication = username + ":" + password;
+          set_cookie("Authorization",authentication,1);
+        }
+      }
+
+      function db_backup() {
+        login();
+        var backup_request = new XMLHttpRequest();
+        backup_request.open("POST","/api/admin/backup/");
+        backup_request.send();
+        backup_request.onload = function() {
+          if (backup_request.status == 200) {
+            window.location = "/database";
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
