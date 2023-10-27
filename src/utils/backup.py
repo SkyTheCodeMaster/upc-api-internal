@@ -61,24 +61,3 @@ async def backup_task(cs: ClientSession, conn: Connection) -> str|False:
   except:
     LOG.exception("Backup failed!")
     return False
-
-# This coroutine will run a coroutine at a specific time
-async def run_at(time, coro, *args, **kwargs):
-  # Get the current timeba
-  now = datetime.datetime.now()
-  # Calculate the delay until the next occurrence of time
-  delay = int(((time - now) % datetime.timedelta(days=1)).total_seconds())
-  for _ in range(delay):
-    # We do this so when we cancel the task, it wakes up every second to check for this.
-    await asyncio.sleep(1)
-  # Run the coroutine
-  return await coro(*args, **kwargs)
-
-async def backup_scheduler(app: Application):
-  time = datetime.datetime.combine(datetime.date.today(), datetime.time(0, 0))
-  async with app.pool.acquire() as conn:
-    while True:
-      try:
-        await run_at(time, backup_task, app.cs, conn)
-      except asyncio.CancelledError:
-        break

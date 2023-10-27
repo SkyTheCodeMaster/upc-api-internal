@@ -1,4 +1,5 @@
 src/config.toml
+backup.sh
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

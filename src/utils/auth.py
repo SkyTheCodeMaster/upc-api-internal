@@ -45,7 +45,6 @@ async def verify(request: web.Request) -> bool:
   authorization = request.headers.get("Authorization",None)
   if authorization is not None:
     username, passwd = get_details(authorization)
-    print(authorization,username,passwd)
     if not username: return False
     return await ahash(passwd, username) in ADMIN_HASH
   authorization = request.cookies.get("Authorization",None)

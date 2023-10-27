@@ -13,7 +13,6 @@ from aiohttp import web
 from frontend.routes.frontend_routes import frontend_routes
 from routes.api_routes import api_routes
 from routes.admin_routes import admin_routes
-from utils.backup import backup_scheduler
 
 LOGFMT = "[%(filename)s][%(asctime)s][%(levelname)s] %(message)s"
 LOGDATEFMT = "%Y/%m/%d-%H:%M:%S"
@@ -58,8 +57,6 @@ async def startup():
     app.pool = pool
     app.cs = session
 
-    backup_task = asyncio.create_task(backup_scheduler(app))
-
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(
@@ -75,8 +72,6 @@ async def startup():
   except asyncio.exceptions.TimeoutError:
     LOG.error("PostgresQL connection timeout. Check the connection arguments!")
   finally:
-    try: backup_task.cancel()
-    except: pass
     try: await site.stop() 
     except: pass
     try: await pool.close()
