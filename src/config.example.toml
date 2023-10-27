@@ -1,0 +1,40 @@
+[data-source.nutritionix]
+  app_id = ""
+  app_key = ""
+
+[postgres]
+  url = "postgresql://your/local/db/upc_database"
+  password = "your_password"
+
+[log]
+  file = ""
+
+[srv]
+  host = "0.0.0.0"
+  port = 9000
+  # IPs exempt from ratelimiting.
+  ratelimit_exempt = [
+    "192.168.0.0/16",
+  ]
+  api_version = "1.0.0"
+
+[pages]
+  frontend_version = "1.1.0"
+
+[pages.items]
+  page_size = 50 # How many items are displayed on each of the /items page.
+
+[pages.database]
+  page_size = 10 # How many backup pastes are displayed per page.
+
+[pages.administration]
+  hash = [
+    "make hash with utils.auth.hash",
+  ]
+  hash_iters = 500_000
+
+[backup]
+  url = "https://paste_server/api/paste/create_query/"
+  api_key = "your_api_key"
+  # Password and URL come from the connection settings
+  backup_command = """PGPASSWORD={password} psql -d upc_database -h {url} - -c "\\copy (SELECT * FROM Items) TO '/tmp/upc_database_export.csv' DELIMITER ',' CSV HEADER""""

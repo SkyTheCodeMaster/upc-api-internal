@@ -17,8 +17,12 @@ LOG = logging.getLogger(__name__)
 
 with open("config.toml") as f:
   config = tomllib.loads(f.read())
-  URL = config["backup"]["url"]
-  API_KEY = config["backup"]["api_key"]
+  URL: str = config["backup"]["url"]
+  API_KEY: str = config["backup"]["api_key"]
+  BACKUP_COMMAND: str = config["backup"]["backup_command"]
+  PG_URL: str = config["postgres"]["url"]
+  PG_PASS: str = config["postgres"]["password"]
+  BACKUP_COMMAND: str = BACKUP_COMMAND.format(url=PG_URL, password=PG_PASS)
 
 async def file_sender(file_name=None):
   async with aiofiles.open(file_name, 'rb') as f:
@@ -30,8 +34,6 @@ async def file_sender(file_name=None):
 async def backup_task(cs: ClientSession, conn: Connection) -> str|False:
   "Backup the items db as a CSV to the paste server."
   # we need to get the items first into a csv.
-  BACKUP_COMMAND = """psql -d upc_database -c "\copy (SELECT * FROM Items) TO '/tmp/upc_database_export.csv' DELIMITER ',' CSV HEADER" """
-  
   try:
     proc = await asyncio.subprocess.create_subprocess_shell(BACKUP_COMMAND)
     await proc.communicate() # This supposedly waits for the process to finish.
