@@ -162,7 +162,7 @@ async def get_database(request: web.Request) -> web.Response:
 
   async with pool.acquire() as conn:
     total_backups = (await conn.fetchrow("SELECT count(*) FROM Backups"))["count"]
-    records = await conn.fetch("SELECT * FROM Backups LIMIT $1 OFFSET $2", DATABASE_PAGE_SIZE, offset)
+    records = await conn.fetch("SELECT * FROM Backups LIMIT $1 OFFSET $2 ORDER BY Date DESC", DATABASE_PAGE_SIZE, offset)
     db_size = (await conn.fetchrow("SELECT pg_size_pretty ( pg_database_size ($1 ) );", "upc_database"))["pg_size_pretty"]
 
     current_time = int(datetime.datetime.now(datetime.timezone.utc).timestamp())
