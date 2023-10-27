@@ -110,6 +110,11 @@
           button.classList.remove("is-loading");
           button.removeAttribute("disabled");
           document.getElementById("upc-input").value = "";
+        } else if (request.status == 404) {
+          document.getElementById("upc-details-upc").innerText = "UPC:  " + data["upc"];
+          button.classList.remove("is-loading");
+          button.removeAttribute("disabled");
+          document.getElementById("upc-input").value = "";
         } else {
           create_popup("HTTP" + request.status + ": " + request.responseText, true);
           button.classList.remove("is-loading");
@@ -175,7 +180,7 @@
         document.getElementById("upc-submit").click();
       }
     })
-    
+
     if (window.location.hash != "") {
       // Stick the hash into the input box and push the button.
       document.getElementById("upc-input").value = window.location.hash.substring(1);

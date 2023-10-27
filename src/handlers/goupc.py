@@ -5,10 +5,10 @@ from typing import TYPE_CHECKING
 from bs4 import BeautifulSoup
 
 from utils.item import Item
-from utils.size import split_size
 
 if TYPE_CHECKING:
   from typing import Union
+  from bs4 import Tag
 
   from aiohttp import ClientSession
 
@@ -26,11 +26,11 @@ async def get_goupc(cs: ClientSession, upc: Union[str,int]) -> False|Item:
       return False
 
     # Extract all the table rows
-    name = soup.find_all("h1", {"class":"product-name"})[0]
+    name: Tag = soup.find_all("h1", {"class":"product-name"})[0]
 
     i = Item(
       upc = upc,
-      name = name
+      name = name.get_text()
     )
 
     return i
