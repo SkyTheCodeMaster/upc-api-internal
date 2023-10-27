@@ -37,4 +37,4 @@
   url = "https://paste_server/api/paste/create_query/"
   api_key = "your_api_key"
   # Password and URL come from the connection settings
-  backup_command = """PGPASSWORD={password} psql -d upc_database -h {url} - -c "\\copy (SELECT * FROM Items) TO '/tmp/upc_database_export.csv' DELIMITER ',' CSV HEADER""""
+  backup_command = """PGPASSWORD={password} psql {url} - -c "\\copy (SELECT * FROM Items) TO '/tmp/upc_database_export.csv' DELIMITER ',' CSV HEADER""""

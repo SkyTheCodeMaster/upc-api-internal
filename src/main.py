@@ -11,8 +11,9 @@ import coloredlogs
 from aiohttp import web
 
 from frontend.routes.frontend_routes import frontend_routes
-from routes.api_routes import api_routes
 from routes.admin_routes import admin_routes
+from routes.api_routes import api_routes
+from utils.logger import CustomWebLogger
 
 LOGFMT = "[%(filename)s][%(asctime)s][%(levelname)s] %(message)s"
 LOGDATEFMT = "%Y/%m/%d-%H:%M:%S"
@@ -41,7 +42,9 @@ coloredlogs.install(
 
 LOG = logging.getLogger(__name__)
 
-app = web.Application()
+app = web.Application(
+  logger = CustomWebLogger(LOG)
+)
 app.add_routes(api_routes)
 app.add_routes(frontend_routes)
 app.add_routes(admin_routes)
