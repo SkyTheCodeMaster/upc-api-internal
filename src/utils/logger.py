@@ -26,6 +26,7 @@ def get_forwarded_for(headers: MultiMapping[str]) -> List[IPAddress]:
   for a in forwarded_for:
     addr = a.strip()
     try:
+      if addr == "127.0.0.1": continue
       valid_ips.append(ip_address(addr))
     except ValueError:
       raise web.HTTPBadRequest(reason=f"Invalid {hdrs.X_FORWARDED_FOR} header")
