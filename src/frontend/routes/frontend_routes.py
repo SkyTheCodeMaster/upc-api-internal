@@ -226,3 +226,16 @@ async def get_publish(request: web.Request) -> web.Response:
   }
 
   return web.Response(body=templates["publish.html"].render(Context(ctx_dict)), content_type="text/html")
+
+@frontend_routes.get("/apidocs")
+async def get_apidocs(request: web.Request) -> web.Response:
+  ctx_dict = {
+    "navbar": sup_templates["nav/navbar.html"].render(NAV_CTX),
+    "footer": sup_templates["nav/footer.html"].render(NAV_CTX),
+  }
+
+  return web.Response(body=templates["apidocs.html"].render(Context(ctx_dict)), content_type="text/html")
+
+@frontend_routes.get("/apidocs/raw")
+async def get_apidocs_raw(request: web.Request) -> web.Response:
+  return web.Response(body=sup_templates["swagger.html"].source, content_type="text/html")

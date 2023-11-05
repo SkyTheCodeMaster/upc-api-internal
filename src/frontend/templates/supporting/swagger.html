@@ -1,0 +1,58 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Swagger UI</title>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2/swagger-ui.css" >
+  <style>
+    html
+    {
+      box-sizing: border-box;
+      overflow: -moz-scrollbars-vertical;
+      overflow-y: scroll;
+    }
+    *,
+    *:before,
+    *:after
+    {
+      box-sizing: inherit;
+    }
+    body {
+      margin:0;
+      background: #fafafa;
+    }
+  </style>
+</head>
+<body>
+<div id="swagger-ui"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2/swagger-ui-bundle.js"> </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/3.24.2/swagger-ui-standalone-preset.js"> </script>
+<script>
+window.onload = function() {
+  var spec = {"openapi": "3.0.3", "info": {"title": "Sky's UPC Database", "description": "This is a free and open-source UPC database.", "contact": {"email": "upc@skystuff.cc"}, "version": "1.0.0"}, "servers": [{"url": "https://upc.skystuff.cc/api/"}], "tags": [{"name": "UPC", "description": "Everything about your Pets"}], "paths": {"/upc/{upc}": {"get": {"tags": ["UPC"], "summary": "Get information about a UPC code.", "parameters": [{"in": "path", "name": "upc", "schema": {"type": "integer"}, "required": true, "description": "8 or 12 digit UPC code to look up."}], "description": "Get information about a UPC code.", "operationId": "getUPC", "responses": {"200": {"description": "Successful operation", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/upc"}}}}, "400": {"description": "Invalid UPC"}, "404": {"description": "UPC Not Found"}}}}, "/upc/": {"post": {"tags": ["UPC"], "summary": "Upload data about a UPC to the database.", "description": "Upload data about a UPC to the database.", "operationId": "addUPC", "requestBody": {"description": "Upload data", "content": {"application/json": {"schema": {"$ref": "#/components/schemas/upc"}}}, "required": true}, "responses": {"200": {"description": "Successful operation"}, "400": {"description": "Invalid input"}}}}}, "components": {"schemas": {"upc": {"type": "object", "properties": {"upc": {"type": "string"}, "name": {"type": "string"}, "quantity": {"type": "string"}, "quantity_unit": {"type": "string"}}, "required": ["upc", "name"]}}}};
+  // Build a system
+  const ui = SwaggerUIBundle({
+    spec: spec,
+    dom_id: '#swagger-ui',
+    deepLinking: true,
+    presets: [
+      SwaggerUIBundle.presets.apis,
+      SwaggerUIStandalonePreset
+    ],
+    plugins: [
+      SwaggerUIBundle.plugins.DownloadUrl
+    ],
+    layout: "StandaloneLayout"
+  })
+  window.ui = ui
+
+  var elements = document.getElementsByClassName("topbar");
+  while(elements.length > 0){
+      elements[0].parentNode.removeChild(elements[0]);
+  }
+}
+</script>
+</body>
+</html>
