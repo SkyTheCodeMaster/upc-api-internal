@@ -10,7 +10,6 @@ import aiofiles
 
 if TYPE_CHECKING:
   from aiohttp import ClientSession
-  from aiohttp.web import Application
   from asyncpg import Connection
 
 LOG = logging.getLogger(__name__)
@@ -60,6 +59,6 @@ async def backup_task(cs: ClientSession, conn: Connection) -> str|False:
       else:
         LOG.error("Failed to upload database backup!")
         LOG.error(f"HTTP{resp.status}: {await resp.text()}")
-  except:
+  except Exception:
     LOG.exception("Backup failed!")
     return False

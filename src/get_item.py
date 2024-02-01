@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 import logging
 
 import aiohttp
 import asyncpg
 
-from handlers import *
+from handlers import upcdatabase_get, nutritionix_get, upcitemdb_get, goupc_get, local_get
 from utils.item import Item
 
 LOG = logging.getLogger()
@@ -22,20 +23,27 @@ async def get_upc(pool: asyncpg.Pool, cs: aiohttp.ClientSession, upc: str|int, *
   item = None
   try:
     async with pool.acquire() as conn:
+      conn: asyncpg.Connection
       LOG.info(f"[LOCAL] Getting {upc}...")
       item = await local_get(conn, upc)
-  except:
+  except Exception:
     LOG.exception("Local cache fail!")
 
   # If not, run through the handlers and try to get it from there.
-  if item: return item
-  if local_only: return False
+  if item: 
+    return item
+  if local_only: 
+    return False
   for handler in handlers:
     try:
       LOG.info(f"[EXTERNAL] Attempting to get {upc} from {handler.__name__}...")
-      item = await handler(cs, upc)
-      if item: break
-    except:
+      async def _get_item():
+        item = await handler(cs, upc)
+      task = asyncio.create_task(_get_item())
+      await asyncio.wait_for(task, timeout=1.0)
+      if item: 
+        break
+    except Exception:
       LOG.exception(f"{handler.__name__} fail!")
 
   if item:
@@ -60,7 +68,7 @@ async def get_upc(pool: asyncpg.Pool, cs: aiohttp.ClientSession, upc: str|int, *
           item.quantity,
           item.quantity_unit
         )
-    except:
+    except Exception:
       LOG.exception("[DB INSERT] Failed!")
 
     return item

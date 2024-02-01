@@ -40,7 +40,8 @@ def join(a: str, b: str) -> str:
   return str(pathlib.Path(a).joinpath(pathlib.Path(b)))
 
 for root, dirs, files in os.walk("frontend/templates"):
-  if "supporting" in root: continue
+  if "supporting" in root:
+    continue
   for file in files:
     filepath = join(root,file)
     with open(filepath,"r") as f:
@@ -105,7 +106,8 @@ async def get_items(request: web.Request) -> web.Response:
 
   total_pages = (count_cache // ITEMS_PAGE_SIZE)
 
-  quan = lambda x,y: x if x is not None else y
+  def quan(x, y):
+    return x if x is not None else y
 
   rows = [{"upc":record["upc"],"name":record["name"],"quantity":quan(record["quantity"],"Unknown"),"quantity_unit":quan(record["quantityunit"],"")} for record in records]
 
@@ -185,8 +187,10 @@ async def get_database(request: web.Request) -> web.Response:
       return f"{x}rd"
     else:
       return f"{x}th"
-  ftime = lambda fmt, t: t.strftime(fmt).replace('{S}', suffix(t.day))
-  parse_date = lambda timestamp: ftime("%b {S}, %Y",datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc))
+  def ftime(fmt, t):
+    return t.strftime(fmt).replace("{S}", suffix(t.day))
+  def parse_date(timestamp):
+    return ftime("%b {S}, %Y", datetime.datetime.fromtimestamp(timestamp, datetime.timezone.utc))
 
   rows = [{"id": record["pasteid"], "date": parse_date(record["date"])} for record in records]
 

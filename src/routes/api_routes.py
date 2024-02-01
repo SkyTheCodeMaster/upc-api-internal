@@ -97,3 +97,22 @@ async def post_api_upc(request: web.Request) -> web.Response:
         data.get("quantity_unit", None)
       )
       return web.Response(status=200)
+
+@api_routes.get("/api/validate/{upc:.*}")
+async def get_api_validate(request: web.Request) -> web.Response:
+  upc = request.match_info["upc"]
+  converted = False
+  try:
+    if len(str(upc)) == 8:
+      converted=True
+      upc = convert_upce(upc)
+    valid = validate_upca(upc)
+  except:
+    valid = False
+
+  packet = {
+    "ok": valid,
+    "converted": converted
+  }
+
+  return web.json_response(packet)
