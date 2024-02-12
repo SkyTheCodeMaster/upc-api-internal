@@ -41,7 +41,8 @@ async def get_api_upc(request: web.Request) -> web.Response:
 @api_routes.post("/api/upc/")
 @limiter.limit("10/minute")
 async def post_api_upc(request: web.Request) -> web.Response:
-  return web.Response(status=500,text="Uploading disabled for now, sorry!")
+  if not request.app.config["api"]["uploading"]["enabled"]:
+    return web.Response(status=403,text="Uploading disabled.")
   pool = request.app.pool
 
   data: dict = await request.json()

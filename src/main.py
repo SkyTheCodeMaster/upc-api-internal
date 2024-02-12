@@ -59,6 +59,7 @@ async def startup():
     session = aiohttp.ClientSession()
     app.pool = pool
     app.cs = session
+    app.config = config
 
     runner = web.AppRunner(app)
     await runner.setup()
