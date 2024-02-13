@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/node-forge@1.0.0/dist/forge.min.js" async></script>
   </head>
   <body>
-    {{ navbar | safe }}
+    <script id="replace_with_navbar" src="/js/nav.js"></script>
     <div class="box">
       <div class="columns">
         <div class="column is-narrow">
@@ -21,7 +21,7 @@
       </div>
     </div>
     <div style="position:absolute;height:fit-content;bottom:0;width:100%;">
-      {{ footer | safe }}
+      <div id="replace_with_footer"></div>
     </div>
     <script>
       function set_cookie(name, value, expire) {

@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
   </head>
   <body>
-    {{ navbar | safe }}
+    <script id="replace_with_navbar" src="/js/nav.js"></script>
     <div class="box m-6" style="width:fit-content;">
       <h1 class="title">UPC Edit</h1>
       <div>
@@ -24,7 +24,7 @@
       </div>
     </div>
     <div style="position:absolute;height:fit-content;bottom:0;width:100%;">
-      {{ footer | safe }}
+      <div id="replace_with_footer"></div>
     </div>
   </body>
   <script>

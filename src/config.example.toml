@@ -1,3 +1,5 @@
+devmode = false
+
 [data-source.nutritionix]
   app_id = ""
   app_key = ""

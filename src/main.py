@@ -3,30 +3,29 @@ from __future__ import annotations
 import asyncio
 import logging
 import math
+import os
 import tomllib
 
 import aiohttp
-import asyncpg
 import coloredlogs
 from aiohttp import web
-
-from frontend.routes.frontend_routes import frontend_routes
-from routes.admin_routes import admin_routes
-from routes.api_routes import api_routes
+import asyncpg
+from utils.get_routes import get_routes
 from utils.logger import CustomWebLogger
+from utils.pg_pool_middleware import pg_pool_middleware
 
 LOGFMT = "[%(filename)s][%(asctime)s][%(levelname)s] %(message)s"
 LOGDATEFMT = "%Y/%m/%d-%H:%M:%S"
-
-with open("config.toml") as f:
-  config = tomllib.loads(f.read())
 
 handlers = [
   logging.StreamHandler()
 ]
 
-if config["log"]["file"]:
-  handlers.append(logging.FileHandler(config["log"]["file"]))
+with open("config.toml") as f:
+  config = tomllib.loads(f.read())
+
+if config['log']['file']:
+  handlers.append(logging.FileHandler(config['log']))
 
 logging.basicConfig(
   handlers = handlers,
@@ -43,30 +42,66 @@ coloredlogs.install(
 LOG = logging.getLogger(__name__)
 
 app = web.Application(
-  logger = CustomWebLogger(LOG)
+  logger = CustomWebLogger(LOG),
+  middlewares=[
+    pg_pool_middleware
+  ]
 )
-app.add_routes(api_routes)
-app.add_routes(frontend_routes)
-app.add_routes(admin_routes)
+api_app = web.Application(
+  logger = CustomWebLogger(LOG),
+  middlewares=[
+    pg_pool_middleware
+  ]
+)
+
+disabled_cogs: list[str] = []
+
+for cog in [
+    f.replace(".py","") 
+    for f in os.listdir("api") 
+    if os.path.isfile(os.path.join("api",f)) and f.endswith(".py")
+  ]:
+  if cog not in disabled_cogs:
+    LOG.info(f"Loading {cog}...")
+    try:
+      routes = get_routes(f"api.{cog}")
+      for route in routes:
+        LOG.info(f"  ↳ {route}")
+      api_app.add_routes(routes)
+    except:
+      LOG.exception(f"Failed to load cog {cog}!")
+
+app.add_subapp("/api/", api_app)
+
+LOG.info("Loading frontend...")
+try:
+  routes = get_routes("frontend.routes")
+  for route in routes:
+    LOG.info(f"  ↳ {route}")
+  app.add_routes(routes)
+except:
+  LOG.exception("Failed to load frontend!")
   
 async def startup():
   try:
+    session = aiohttp.ClientSession()
     pool = await asyncpg.create_pool(
       config["postgres"]["url"],
       password=config["postgres"]["password"]
     )
-
-    session = aiohttp.ClientSession()
-    app.pool = pool
     app.cs = session
-    app.config = config
+    api_app.cs = session
+    app.pool = pool
+    api_app.pool = pool
+    api_app.LOG = LOG
+    app.LOG = LOG
 
     runner = web.AppRunner(app)
     await runner.setup()
     site = web.TCPSite(
       runner,
-      config["srv"]["host"],
-      config["srv"]["port"],
+      config['srv']['host'],
+      config['srv']['port'],
     )
     await site.start()
     print(f"Started server on http://{config['srv']['host']}:{config['srv']['port']}...\nPress ^C to close...")
@@ -74,13 +109,13 @@ async def startup():
   except KeyboardInterrupt:
     pass
   except asyncio.exceptions.TimeoutError:
-    LOG.error("PostgresQL connection timeout. Check the connection arguments!")
+    LOG.error("PostgreSQL connection timeout. Check the connection arguments!")
   finally:
     try: await site.stop() 
     except: pass
-    try: await pool.close()
-    except: pass
     try: await session.close()
+    except: pass
+    try: await pool.close()
     except: pass
 
 asyncio.run(startup())
