@@ -1,0 +1,5 @@
+.scroll-horizontal-on-mobile {
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+}
