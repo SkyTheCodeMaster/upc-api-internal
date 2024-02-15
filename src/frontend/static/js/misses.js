@@ -30,7 +30,6 @@ function generate_table_row(miss) {
   button_create.innerText = "Create";
   
   // Nest elements
-  td_button_lookup.appendChild(button_lookup);
   td_button_create.appendChild(button_create);
   tr.append(td_upc);
   tr.append(td_converted);
