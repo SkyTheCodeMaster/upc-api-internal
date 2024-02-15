@@ -24,3 +24,10 @@ fetch("/sup/footer")
       footer_backend_p.innerText = format(footer_backend_p.innerText, data["api_version"]);
     })
 })
+
+// Toggle button for navbar.
+function toggle_navmenu(burger) {
+  let navbar_menu = document.getElementById("navbar_menu");
+  navbar_menu.classList.toggle("is-active");
+  burger.classList.toggle("is-active");
+}
