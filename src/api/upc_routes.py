@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import math
+import datetime
 import tomllib
 from typing import TYPE_CHECKING
 
@@ -8,7 +10,7 @@ from aiohttp.web import Response
 from aiohttplimiter import Limiter, default_keyfunc
 from handlers.local import get_local
 
-from get_item import get_upc
+from utils.get_item import get_upc
 from utils.upc import convert_upce, validate_upca
 from utils.item import Item
 
@@ -40,6 +42,8 @@ async def get_upc_aiohttp(request: Request) -> Response:
   if item:
     return web.json_response(item.dump)
   else:
+    timestamp = math.floor(datetime.datetime.utcnow().timestamp())
+    await request.conn.execute("""INSERT INTO Misses (UPC, Converted, Date) VALUES ($1, $2, $3);""", upc, converted, timestamp)
     return web.Response(status=404)
 
 @routes.get("/upc/list/")
@@ -146,6 +150,38 @@ async def get_validate(request: web.Request) -> web.Response:
   }
 
   return web.json_response(packet)
+
+@routes.get("/upc/misses/")
+async def get_upc_misses(request: Request) -> Response:
+  query = request.query
+
+  try:
+    offset = int(query.get("offset","0"))
+  except ValueError:
+    return Response(status=400,text="offset must be integer!")
+  try:
+    limit = int(query.get("limit","50"))
+  except ValueError:
+    return Response(status=400,text="limit must be integer!")
+
+  miss_records = await request.conn.fetch("SELECT * FROM Misses LIMIT $1 OFFSET $2;", limit, offset)
+  misses = [
+    {
+      "upc": record.get("upc"),
+      "converted": record.get("converted"),
+      "date": datetime.datetime.fromtimestamp(record.get("date",0)).strftime("%Y/%m/%d-%H:%M:%S")
+    } for record in miss_records
+  ]
+  count_record = await request.conn.fetchrow("SELECT COUNT(*) FROM Misses;")
+  count = count_record.get("count")
+
+  out = {
+    "total": count,
+    "returned": len(misses),
+    "misses": misses
+  }
+
+  return web.json_response(out)
 
 def setup() -> web.RouteTableDef:
   return routes

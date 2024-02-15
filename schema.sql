@@ -13,3 +13,11 @@ CREATE TABLE IF NOT EXISTS Backups (
   pasteid TEXT,
   date BIGINT PRIMARY KEY
 );
+
+-- This is for item misses, so a human can look through
+-- and manually enter item details.
+CREATE TABLE IF NOT EXISTS Misses (
+  upc TEXT PRIMARY KEY,
+  converted BOOLEAN, -- Whether or not the UPC was originally a UPC-E.
+  date BIGINT
+);

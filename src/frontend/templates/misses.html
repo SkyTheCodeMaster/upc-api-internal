@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
     <link rel="stylesheet" href="/css/common.css">
     <script src="/js/common.js" async></script>
-    <script src="/js/items.js" async></script>
+    <script src="/js/misses.js" async></script>
   </head>
   <body>
     <script id="replace_with_navbar" src="/js/nav.js"></script>
@@ -21,20 +21,19 @@
         </ul>
       </nav>
       <!-- This is the actual table contents -->
-      <h1 id="showing_x_of_y_items_h1" class="title is-4 has-text-centered my-0">Showing {0} of {1} items.</h1>
-      <h1 id="page_x_of_y_items_h1" class="title is-6 has-text-centered my-1">Page {0} of {1}.</h1>
+      <h1 id="showing_x_of_y_misses_h1" class="title is-4 has-text-centered my-0">Showing {0} of {1} misses.</h1>
+      <h1 id="page_x_of_y_misses_h1" class="title is-6 has-text-centered my-1">Page {0} of {1}.</h1>
       <div class="scroll-horizontal-on-mobile">
         <table class="table is-striped is-bordered mt-0" style="margin: 3em auto;">
           <thead>
             <tr>
               <th>UPC</th>
-              <th>Name</th>
-              <th>Quantity</th>
-              <th>View</th>
-              <th>Edit</th>
+              <th>Converted</th>
+              <th>Date</th>
+              <th>Create</th>
             </tr>
           </thead>
-          <tbody id="item_table_tbody">
+          <tbody id="miss_table_tbody">
           </tbody>
         </table>
       </div>
