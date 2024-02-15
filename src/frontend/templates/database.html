@@ -5,49 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Sky's UPC Database</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+    <script src="/js/common.js" async></script>
+    <script src="/js/database.js" async></script>
   </head>
   <body>
     <script id="replace_with_navbar" src="/js/nav.js"></script>
     <div class="box m-4">
-      <h1 class="title is-4">There are {{ item_count }} items in the database.</h1>
-      <h1 class="title is-4">There are {{ total_backups }} total database backups.</h1>
-      <h1 class="title is-4">The database is {{ db_size }}.</h1>
+      <h1 class="title is-4" id="database_info_items">There are {0} items in the database.</h1>
+      <h1 class="title is-4" id="database_info_total_backups">There are {0} total database backups.</h1>
+      <h1 class="title is-4" id="database_info_database_size">The database is {0}.</h1>
     </div>
     <div class="box m-4">
       <h1 class="title is-5">Backup Browser</h1>
       <!-- This is the pagination at the top -->
       <nav class="pagination is-centered" role="navigation" aria-label="pagination">
-        {% if previous_page or previous_page == 0 %} <a class="pagination-previous" href="/database?page={{ previous_page }}">Previous</a> {% endif %}
-        {% if next_page %} <a class="pagination-next" href="/database?page={{ next_page }}">Next Page</a> {% endif %}
-        <ul class="pagination-list">
-          {% if current_page != 0 %}
-            <li><a class="pagination-link" href="/database">1</a></li>
-            <li><span class="pagination-ellipsis">&hellip;</span></li>
-          {% endif %}
-          {% if previous_page and previous_page != 0 %} <li><a class="pagination-link" href="/database?page={{ previous_page }}">{{ previous_page|add:"1" }}</a></li> {% endif %}
-          <li><a class="pagination-link is-current" href="/database?page={{ current_page }}">{{ current_page|add:"1" }}</a></li>
-          {% if next_page and next_page != total_pages|add:"-1" %} <li><a class="pagination-link" href="/database?page={{ next_page }}">{{ next_page|add:"1" }}</a></li> {% endif %}
-          {% if current_page != total_pages %}
-            <li><span class="pagination-ellipsis">&hellip;</span></li>
-            <li><a class="pagination-link" href="/database?page={{ total_pages }}">{{ total_pages }}</a></li>
-          {% endif %}
+        <a class="pagination-previous" id="pagination_previous">Previous</a>
+        <a class="pagination-next" id="pagination_next">Next Page</a>
+        <ul class="pagination-list" id="pagination_list">
+          
         </ul>
       </nav>
       <!-- This is the actual table contents -->
-      <table class="table" style="margin: 3em auto;">
+      <h1 id="showing_x_of_y_backups_h1" class="title is-4 has-text-centered my-0">Showing {0} of {1} backups.</h1>
+      <h1 id="page_x_of_y_backups_h1" class="title is-6 has-text-centered my-1">Page {0} of {1}.</h1>
+      <table class="table is-striped is-bordered mt-0" style="margin: 3em auto;">
         <thead>
           <tr>
             <th>Paste</th>
             <th>Date</th>
           </tr>
         </thead>
-        <tbody>
-          {% for row in rows %}
-          <tr>
-            <td><a href="https://paste.skystuff.cc/{{ row.id }}">{{ row.id }}</a></td>
-            <td>{{ row.date }}</td>
-          </tr>
-          {% endfor %}
+        <tbody id="backup_table_tbody">
         </tbody>
       </table>
     </div>

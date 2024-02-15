@@ -23,12 +23,6 @@ devmode = false
 [pages]
   frontend_version = "1.1.1"
 
-[pages.items]
-  page_size = 50 # How many items are displayed on each of the /items page.
-
-[pages.database]
-  page_size = 10 # How many backup pastes are displayed per page.
-
 [pages.administration]
   hash = [
     "make hash with utils.auth.hash",

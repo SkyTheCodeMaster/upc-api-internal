@@ -10,6 +10,7 @@ from handlers.local import get_local
 
 from get_item import get_upc
 from utils.upc import convert_upce, validate_upca
+from utils.item import Item
 
 if TYPE_CHECKING:
   from utils.extra_request import Request
@@ -22,9 +23,9 @@ limiter = Limiter(default_keyfunc, exempt_ips)
 
 routes = web.RouteTableDef()
 
-@routes.get("/api/upc/{upc:\d+}")
+@routes.get("/upc/{upc:\d+}")
 @limiter.limit("30/minute")
-async def get_api_upc(request: Request) -> Response:
+async def get_upc_aiohttp(request: Request) -> Response:
   
   upc = request.match_info["upc"]
   converted = False
@@ -40,10 +41,37 @@ async def get_api_upc(request: Request) -> Response:
     return web.json_response(item.dump)
   else:
     return web.Response(status=404)
+
+@routes.get("/upc/list/")
+@limiter.limit("30/minute")
+async def get_upc_list(request: Request) -> Response:
+  query = request.query
+
+  try:
+    offset = int(query.get("offset","0"))
+  except ValueError:
+    return Response(status=400,text="offset must be integer!")
+  try:
+    limit = int(query.get("limit","50"))
+  except ValueError:
+    return Response(status=400,text="limit must be integer!")
+
+  item_records = await request.conn.fetch("SELECT * FROM Items LIMIT $1 OFFSET $2;", limit, offset)
+  items = [Item.from_record(record).dump for record in item_records]
+  count_record = await request.conn.fetchrow("SELECT COUNT(*) FROM Items;")
+  count = count_record.get("count")
+
+  out = {
+    "total": count,
+    "returned": len(items),
+    "items": items
+  }
+
+  return web.json_response(out)
   
-@routes.post("/api/upc/")
+@routes.post("/upc/")
 @limiter.limit("10/minute")
-async def post_api_upc(request: Request) -> Response:
+async def post_upc(request: Request) -> Response:
   if not request.app.config["api"]["uploading"]["enabled"]:
     return web.Response(status=403,text="Uploading disabled.")
 
@@ -100,8 +128,8 @@ async def post_api_upc(request: Request) -> Response:
     )
     return web.Response(status=200)
 
-@routes.get("/api/validate/{upc:.*}")
-async def get_api_validate(request: web.Request) -> web.Response:
+@routes.get("/validate/{upc:.*}")
+async def get_validate(request: web.Request) -> web.Response:
   upc = request.match_info["upc"]
   converted = False
   try:
@@ -109,7 +137,7 @@ async def get_api_validate(request: web.Request) -> web.Response:
       converted=True
       upc = convert_upce(upc)
     valid = validate_upca(upc)
-  except:
+  except Exception:
     valid = False
 
   packet = {

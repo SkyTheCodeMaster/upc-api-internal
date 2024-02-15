@@ -68,7 +68,7 @@ for cog in [
       for route in routes:
         LOG.info(f"  ↳ {route}")
       api_app.add_routes(routes)
-    except:
+    except Exception:
       LOG.exception(f"Failed to load cog {cog}!")
 
 app.add_subapp("/api/", api_app)
@@ -79,7 +79,7 @@ try:
   for route in routes:
     LOG.info(f"  ↳ {route}")
   app.add_routes(routes)
-except:
+except Exception:
   LOG.exception("Failed to load frontend!")
   
 async def startup():
@@ -95,6 +95,8 @@ async def startup():
     api_app.pool = pool
     api_app.LOG = LOG
     app.LOG = LOG
+    app.config = config
+    api_app.config = config
 
     runner = web.AppRunner(app)
     await runner.setup()
@@ -111,11 +113,17 @@ async def startup():
   except asyncio.exceptions.TimeoutError:
     LOG.error("PostgreSQL connection timeout. Check the connection arguments!")
   finally:
-    try: await site.stop() 
-    except: pass
-    try: await session.close()
-    except: pass
-    try: await pool.close()
-    except: pass
+    try:
+      await site.stop() 
+    except Exception: 
+      pass
+    try: 
+      await session.close()
+    except Exception: 
+      pass
+    try: 
+      await pool.close()
+    except Exception: 
+      pass
 
 asyncio.run(startup())

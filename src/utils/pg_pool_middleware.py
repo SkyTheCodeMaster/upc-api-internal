@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 async def pg_pool_middleware(request: Request, handler):
   async with request.app.pool.acquire() as conn:
     conn: Connection
-    request.conn: Connection = conn
+    request.conn = conn
     request.pool = request.app.pool
     request.LOG = request.app.LOG
     request.session = request.app.cs

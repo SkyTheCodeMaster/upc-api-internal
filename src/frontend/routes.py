@@ -1,36 +1,23 @@
 from __future__ import annotations
 
-import datetime
 import os
 import pathlib
 import tomllib
-import urllib.parse
 from typing import TYPE_CHECKING
 
 from aiohttp import web
-from django import setup as django_setup
-from django.conf import settings as django_settings
-from django.template import Context, Engine
 
 if TYPE_CHECKING:
-  from typing import Any, Union
-
-  from django.template import Template
-
-django_settings.configure()
-django_setup()
+  pass
 
 with open("config.toml") as f:
   config = tomllib.loads(f.read())
 
 routes = web.RouteTableDef()
 
-sub_grand_context = {}
-
 # Load all of the templates in the static folder.
-engine = Engine()
-templates: dict[str,Template] = {}
-sup_templates: dict[str,Template] = {}
+templates: dict[str,str] = {}
+sup_templates: dict[str,str] = {}
 
 def join(a: str, b: str) -> str:
   "Join 2 filepaths"
@@ -40,38 +27,52 @@ for root, dirs, files in os.walk("frontend/templates"):
   for file in files:
     filepath = join(root,file)
     with open(filepath,"r") as f:
-      tmpl = engine.from_string(f.read())
-      templates[filepath.removeprefix("frontend/templates").removeprefix("/")] = tmpl
+      templates[filepath.removeprefix("frontend/templates").removeprefix("/")] = f.read()
 
 for root, dirs, files in os.walk("frontend/supporting"):
   for file in files:
     filepath = join(root,file)
     with open(filepath,"r") as f:
-      tmpl = engine.from_string(f.read())
-      sup_templates[filepath.removeprefix("frontend/supporting").removeprefix("/")] = tmpl
+      sup_templates[filepath.removeprefix("frontend/supporting").removeprefix("/")] = f.read()
 
 def reload_files():
   for root, dirs, files in os.walk("templates"):
-    if "supporting" in root: continue
+    if "supporting" in root:
+      continue
     for file in files:
       filepath = join(root,file)
       with open(filepath,"r") as f:
-        tmpl = engine.from_string(f.read())
-        templates[filepath.removeprefix("templates").removeprefix("/")] = tmpl
+        templates[filepath.removeprefix("templates").removeprefix("/")] = f.read()
 
   for root, dirs, files in os.walk("supporting"):
     for file in files:
       filepath = join(root,file)
       with open(filepath,"r") as f:
-        tmpl = engine.from_string(f.read())
-        sup_templates[filepath.removeprefix("supporting").removeprefix("/")] = tmpl
+        sup_templates[filepath.removeprefix("supporting").removeprefix("/")] = f.read()
 
-def grand_context(request: web.Request) -> dict[str,str]:
-  gc = {
-    **sub_grand_context,
-  }
+for name, contents in templates.items():
+  async def serve(request: web.Request, name=name, contents=contents) -> web.Response:
+    return web.Response(text=contents, content_type="text/html")
 
-  return gc
+  clean_file_name = name.replace("/","_").removesuffix(".html")
+  serve.__name__ = f"get_{clean_file_name}"
+  serve.__qualname__ = serve.__name__
+
+  serve_name = name.removesuffix(".html")
+
+  routes._items.append(web.RouteDef("GET",f"/{serve_name}", serve, {}))
+
+for name, contents in sup_templates.items():
+  async def serve(request: web.Request, name=name, contents=contents) -> web.Response:
+    return web.Response(text=contents, content_type="text/html")
+
+  clean_file_name = name.replace("/","_").removesuffix(".html")
+  serve.__name__ = f"get_{clean_file_name}"
+  serve.__qualname__ = serve.__name__
+
+  serve_name = name.removesuffix(".html")
+
+  routes._items.append(web.RouteDef("GET",f"/sup/{serve_name}", serve, {}))
 
 @routes.get("/")
 async def get_index(request: web.Request) -> web.Response:
@@ -79,10 +80,7 @@ async def get_index(request: web.Request) -> web.Response:
   if config["devmode"]:
     reload_files()
 
-  ctx_dict: dict[str,Any] = {
-    
-  }
-  rendered = templates["index.html"].render(Context({**grand_context(request),**ctx_dict}))
+  rendered = templates["index.html"]
   return web.Response(body=rendered,content_type="text/html")
 
 routes._items.append(web.static("/","frontend/static"))

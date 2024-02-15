@@ -33,28 +33,30 @@ def get_details(details: str) -> tuple[str,str]:
   "Take in a string, and return username,password"
   try:
     auth = base64.b64decode(details.removeprefix("Basic ")).decode()
-  except:
+  except Exception:
     auth = details
   try:
     upass = auth.split(":")
     return upass[0],upass[1]
-  except:
+  except Exception:
     return False,False
 
 async def verify(request: web.Request) -> bool:
   authorization = request.headers.get("Authorization",None)
   if authorization is not None:
     username, passwd = get_details(authorization)
-    if not username: return False
+    if not username:
+      return False
     return await ahash(passwd, username) in ADMIN_HASH
   authorization = request.cookies.get("Authorization",None)
   if authorization is not None:
     username, passwd = get_details(authorization)
-    if not username: return False
+    if not username:
+      return False
     return await ahash(passwd, username) in ADMIN_HASH
   return False
 
 class HashedBasicAuth(BasicAuthMiddleware):
   async def check_credentials(self, username: str, password: str, request: web.Request):
     # here, for example, you can search user in the database by passed `username` and `password`, etc.
-    return hash(password, username) in ADMIN_HASH
+    return await ahash(password, username) in ADMIN_HASH
