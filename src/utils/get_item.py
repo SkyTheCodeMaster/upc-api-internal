@@ -6,7 +6,7 @@ import logging
 import aiohttp
 import asyncpg
 
-from handlers import all_handlers, local_get
+from handlers import all_handlers, get_local
 from utils.item import Item
 
 LOG = logging.getLogger()
@@ -17,7 +17,7 @@ async def get_upc(conn: asyncpg.Connection, cs: aiohttp.ClientSession, upc: str|
   try:
     conn: asyncpg.Connection
     LOG.info(f"[LOCAL] Getting {upc}...")
-    item = await local_get(conn, upc)
+    item = await get_local(conn, upc)
   except Exception:
     LOG.exception("Local cache fail!")
 
