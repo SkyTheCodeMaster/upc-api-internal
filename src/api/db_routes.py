@@ -69,5 +69,7 @@ async def get_database_backups_list(request: Request) -> Response:
 
   return web.json_response(packet)
 
-def setup() -> web.RouteTableDef:
-  return routes
+async def setup(app: web.Application) -> None:
+  for route in routes:
+    app.LOG.info(f"  ↳ {route}")
+  app.add_routes(routes)

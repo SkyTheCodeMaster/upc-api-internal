@@ -35,21 +35,6 @@ for root, dirs, files in os.walk("frontend/supporting"):
     with open(filepath,"r") as f:
       sup_templates[filepath.removeprefix("frontend/supporting").removeprefix("/")] = f.read()
 
-def reload_files():
-  for root, dirs, files in os.walk("templates"):
-    if "supporting" in root:
-      continue
-    for file in files:
-      filepath = join(root,file)
-      with open(filepath,"r") as f:
-        templates[filepath.removeprefix("templates").removeprefix("/")] = f.read()
-
-  for root, dirs, files in os.walk("supporting"):
-    for file in files:
-      filepath = join(root,file)
-      with open(filepath,"r") as f:
-        sup_templates[filepath.removeprefix("supporting").removeprefix("/")] = f.read()
-
 for name, contents in templates.items():
   async def serve(request: web.Request, name=name, contents=contents) -> web.Response:
     return web.Response(text=contents, content_type="text/html")
@@ -77,13 +62,13 @@ for name, contents in sup_templates.items():
 @routes.get("/")
 async def get_index(request: web.Request) -> web.Response:
   # Check devmode
-  if config["devmode"]:
-    reload_files()
 
   rendered = templates["index.html"]
   return web.Response(body=rendered,content_type="text/html")
 
 routes._items.append(web.static("/","frontend/static"))
 
-def setup() -> web.RouteTableDef:
-  return routes
+async def setup(app: web.Application) -> None:
+  for route in routes:
+    app.LOG.info(f"  ↳ {route}")
+  app.add_routes(routes)

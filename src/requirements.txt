@@ -5,5 +5,5 @@ aiofiles==23.2.1
 asyncpg==0.28.0
 beautifulsoup4==4.12.2
 coloredlogs==15.0.1
-Django==4.2.6
 git+https://github.com/SkyTheCodeMaster/aiohttp-ratelimiter
+aiocron==1.8

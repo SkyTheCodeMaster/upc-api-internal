@@ -21,5 +21,7 @@ async def post_api_admin_backup(request: Request) -> Response:
   result = await backup_task(request.session, request.conn)
   return web.Response(status=200 if result else 500)
 
-def setup() -> web.RouteTableDef:
-  return routes
+async def setup(app: web.Application) -> None:
+  for route in routes:
+    app.LOG.info(f"  ↳ {route}")
+  app.add_routes(routes)

@@ -187,5 +187,7 @@ async def get_upc_misses(request: Request) -> Response:
 
   return web.json_response(out)
 
-def setup() -> web.RouteTableDef:
-  return routes
+async def setup(app: web.Application) -> None:
+  for route in routes:
+    app.LOG.info(f"  ↳ {route}")
+  app.add_routes(routes)

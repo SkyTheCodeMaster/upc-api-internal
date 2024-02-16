@@ -10,7 +10,7 @@ import aiohttp
 import coloredlogs
 from aiohttp import web
 import asyncpg
-from utils.get_routes import get_routes
+from utils.get_routes import get_module
 from utils.logger import CustomWebLogger
 from utils.pg_pool_middleware import pg_pool_middleware
 
@@ -53,34 +53,6 @@ api_app = web.Application(
     pg_pool_middleware
   ]
 )
-
-disabled_cogs: list[str] = []
-
-for cog in [
-    f.replace(".py","") 
-    for f in os.listdir("api") 
-    if os.path.isfile(os.path.join("api",f)) and f.endswith(".py")
-  ]:
-  if cog not in disabled_cogs:
-    LOG.info(f"Loading {cog}...")
-    try:
-      routes = get_routes(f"api.{cog}")
-      for route in routes:
-        LOG.info(f"  ↳ {route}")
-      api_app.add_routes(routes)
-    except Exception:
-      LOG.exception(f"Failed to load cog {cog}!")
-
-app.add_subapp("/api/", api_app)
-
-LOG.info("Loading frontend...")
-try:
-  routes = get_routes("frontend.routes")
-  for route in routes:
-    LOG.info(f"  ↳ {route}")
-  app.add_routes(routes)
-except Exception:
-  LOG.exception("Failed to load frontend!")
   
 async def startup():
   try:
@@ -97,6 +69,30 @@ async def startup():
     app.LOG = LOG
     app.config = config
     api_app.config = config
+
+    disabled_cogs: list[str] = []
+
+    for cog in [
+        f.replace(".py","") 
+        for f in os.listdir("api") 
+        if os.path.isfile(os.path.join("api",f)) and f.endswith(".py")
+      ]:
+      if cog not in disabled_cogs:
+        LOG.info(f"Loading {cog}...")
+        try:
+          lib = get_module(f"api.{cog}")
+          await lib.setup(api_app)
+        except Exception:
+          LOG.exception(f"Failed to load cog {cog}!")
+
+    app.add_subapp("/api/", api_app)
+
+    LOG.info("Loading frontend...")
+    try:
+      lib = get_module("frontend.routes")
+      await lib.setup(app)
+    except Exception:
+      LOG.exception("Failed to load frontend!")
 
     runner = web.AppRunner(app)
     await runner.setup()

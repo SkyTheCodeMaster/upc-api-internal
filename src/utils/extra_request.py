@@ -14,6 +14,7 @@ if TYPE_CHECKING:
 class Application(BaseApplication):
   pool: Pool
   LOG: Logger
+  cs: ClientSession
 
 
 class Request(BaseRequest):
