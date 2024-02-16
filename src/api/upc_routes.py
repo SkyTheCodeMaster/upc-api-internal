@@ -10,6 +10,7 @@ from aiohttp.web import Response
 from aiohttplimiter import Limiter, default_keyfunc
 from handlers.local import get_local
 
+from asyncpg.exceptions import UniqueViolationError
 from utils.get_item import get_upc
 from utils.upc import convert_upce, validate_upca
 from utils.item import Item
@@ -43,7 +44,10 @@ async def get_upc_aiohttp(request: Request) -> Response:
     return web.json_response(item.dump)
   else:
     timestamp = math.floor(datetime.datetime.utcnow().timestamp())
-    await request.conn.execute("""INSERT INTO Misses (UPC, Converted, Date) VALUES ($1, $2, $3);""", upc, converted, timestamp)
+    try:
+      await request.conn.execute("""INSERT INTO Misses (UPC, Converted, Date) VALUES ($1, $2, $3);""", upc, converted, timestamp)
+    except UniqueViolationError:
+      pass # This doesn't matter.
     return web.Response(status=404)
 
 @routes.get("/upc/list/")
