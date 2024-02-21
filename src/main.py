@@ -13,6 +13,7 @@ import asyncpg
 from utils.get_routes import get_module
 from utils.logger import CustomWebLogger
 from utils.pg_pool_middleware import pg_pool_middleware
+import aiohttp_cors
 
 LOGFMT = "[%(filename)s][%(asctime)s][%(levelname)s] %(message)s"
 LOGDATEFMT = "%Y/%m/%d-%H:%M:%S"
@@ -53,6 +54,16 @@ api_app = web.Application(
     pg_pool_middleware
   ]
 )
+
+cors_defaults = {
+  "*": aiohttp_cors.ResourceOptions(
+    allow_headers="*",
+    expose_headers="*"
+  )
+}
+
+cors = aiohttp_cors.setup(app, defaults=cors_defaults)
+api_cors = aiohttp_cors.setup(api_app, defaults=cors_defaults)
   
 async def startup():
   try:

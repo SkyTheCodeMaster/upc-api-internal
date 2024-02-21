@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import asyncio
 import datetime
 import logging
 import tomllib
@@ -18,10 +17,9 @@ with open("config.toml") as f:
   config = tomllib.loads(f.read())
   URL: str = config["backup"]["url"]
   API_KEY: str = config["backup"]["api_key"]
-  BACKUP_COMMAND: str = config["backup"]["backup_command"]
+  BACKUP_FILE: str = config["backup"]["backup_file"]
   PG_URL: str = config["postgres"]["url"]
   PG_PASS: str = config["postgres"]["password"]
-  BACKUP_COMMAND: str = BACKUP_COMMAND.format(url=PG_URL, password=PG_PASS)
 
 async def file_sender(file_name=None):
   async with aiofiles.open(file_name, 'rb') as f:
@@ -34,8 +32,7 @@ async def backup_task(cs: ClientSession, conn: Connection) -> str|False:
   "Backup the items db as a CSV to the paste server."
   # we need to get the items first into a csv.
   try:
-    proc = await asyncio.subprocess.create_subprocess_shell(BACKUP_COMMAND)
-    await proc.communicate() # This supposedly waits for the process to finish.
+    await conn.copy_from_query("SELECT * FROM Items", output=BACKUP_FILE, format="csv", delimiter=",", header=True)
     # Now we have our CSV file to POST to the paste server.
     now = datetime.datetime.now()
     current_date = now.strftime("%Y-%m-%d_%H:%M")
@@ -49,7 +46,7 @@ async def backup_task(cs: ClientSession, conn: Connection) -> str|False:
       "Authorization": API_KEY
     }
 
-    async with cs.post(URL, params=query, headers=headers, data=file_sender(file_name="/tmp/upc_database_export.csv")) as resp:
+    async with cs.post(URL, params=query, headers=headers, data=file_sender(file_name=BACKUP_FILE)) as resp:
       if resp.status == 200:
         paste_id = await resp.text()
         # good, now we should push this ID into the database.

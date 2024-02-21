@@ -36,3 +36,15 @@ function db_backup() {
     }
   }
 }
+
+function clear_misses() {
+  login();
+  var clearmisses_request = new XMLHttpRequest();
+  clearmisses_request.open("POST","/api/admin/clearmisses/");
+  clearmisses_request.send();
+  clearmisses_request.onload = function() {
+    if (clearmisses_request.status == 200) {
+      window.location = "/misses";
+    }
+  }
+}

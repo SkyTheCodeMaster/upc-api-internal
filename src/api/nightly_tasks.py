@@ -1,15 +1,21 @@
 from __future__ import annotations
 
+import tomllib
 from typing import TYPE_CHECKING
 
-from aiohttp import web
 import aiocron
+from aiohttp import web
 
 from utils.backup import backup_task
 
 if TYPE_CHECKING:
+  from typing import Awaitable, Callable
+
   from utils.extra_request import Application
-  from typing import Callable, Awaitable
+
+with open("config.toml") as f:
+  config = tomllib.loads(f.read())
+  run_nightlys = config["backup"]["run_nightlys"]
 
 def nightly(app: Application) -> Callable[[None,None], Awaitable[None]]:
   async def _inner():
@@ -34,5 +40,7 @@ def nightly(app: Application) -> Callable[[None,None], Awaitable[None]]:
 
 
 async def setup(app: web.Application) -> None:
+  if not run_nightlys:
+    return app.LOG.error("Refusing to initiate nightly tasks, check config!\nbackup.run_nightlys = false")
   cron = aiocron.crontab("0 0 * * *", func=nightly(app), start=True)
   app.nightly_tasks = cron
