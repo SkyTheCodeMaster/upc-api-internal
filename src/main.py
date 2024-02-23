@@ -54,16 +54,6 @@ api_app = web.Application(
     pg_pool_middleware
   ]
 )
-
-cors_defaults = {
-  "*": aiohttp_cors.ResourceOptions(
-    allow_headers="*",
-    expose_headers="*"
-  )
-}
-
-cors = aiohttp_cors.setup(app, defaults=cors_defaults)
-api_cors = aiohttp_cors.setup(api_app, defaults=cors_defaults)
   
 async def startup():
   try:
@@ -72,7 +62,7 @@ async def startup():
       config["postgres"]["url"],
       password=config["postgres"]["password"],
       max_size=250,
-      
+
     )
     app.cs = session
     api_app.cs = session

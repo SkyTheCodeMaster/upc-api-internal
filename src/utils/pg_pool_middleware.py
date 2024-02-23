@@ -17,4 +17,6 @@ async def pg_pool_middleware(request: Request, handler):
     request.LOG = request.app.LOG
     request.session = request.app.cs
     resp = await handler(request)
+    resp.headers["Access-Control-Allow-Origin"] = "*"
+    resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return resp
