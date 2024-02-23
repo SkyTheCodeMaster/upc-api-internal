@@ -70,7 +70,9 @@ async def startup():
     session = aiohttp.ClientSession()
     pool = await asyncpg.create_pool(
       config["postgres"]["url"],
-      password=config["postgres"]["password"]
+      password=config["postgres"]["password"],
+      max_size=250,
+      
     )
     app.cs = session
     api_app.cs = session

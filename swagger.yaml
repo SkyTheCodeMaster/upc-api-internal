@@ -1,0 +1,73 @@
+openapi: 3.0.3
+info:
+  title: Sky's UPC Database
+  description: This is a free and open-source UPC database.
+  contact:
+    email: upc@skystuff.cc
+  version: 1.0.0
+servers:
+  - url: https://upc.skystuff.cc/api/
+tags:
+  - name: UPC
+    description: Everything about your Pets
+paths:
+  /upc/{upc}:
+    get:
+      tags:
+        - UPC
+      summary: Get information about a UPC code.
+      parameters:
+        - in: path
+          name: upc
+          schema:
+            type: integer
+          required: true
+          description: 8 or 12 digit UPC code to look up.
+      description: Get information about a UPC code.
+      operationId: getUPC
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/upc'
+        '400':
+          description: Invalid UPC
+        '404':
+          description: UPC Not Found
+  /upc/:
+    post:
+      tags:
+        - UPC
+      summary: Upload data about a UPC to the database.
+      description: Upload data about a UPC to the database.
+      operationId: addUPC
+      requestBody:
+        description: Upload data
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/upc'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid input
+components:
+  schemas:
+    upc:
+      type: object
+      properties:
+        upc:
+          type: string
+        name:
+          type: string
+        quantity:
+          type: string
+        quantity_unit:
+          type: string
+      required:
+        - upc
+        - name
