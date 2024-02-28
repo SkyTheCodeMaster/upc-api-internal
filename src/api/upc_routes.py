@@ -1,19 +1,20 @@
 from __future__ import annotations
 
-import math
 import datetime
+import math
 import tomllib
 from typing import TYPE_CHECKING
 
+import asyncpg
 from aiohttp import web
 from aiohttp.web import Response
 from aiohttplimiter import Limiter, default_keyfunc
-from handlers.local import get_local
-
 from asyncpg.exceptions import UniqueViolationError
+
+from handlers.local import get_local
 from utils.get_item import get_upc
-from utils.upc import convert_upce, validate_upca
 from utils.item import Item
+from utils.upc import convert_upce, validate_upca
 
 if TYPE_CHECKING:
   from utils.extra_request import Request
@@ -49,6 +50,50 @@ async def get_upc_aiohttp(request: Request) -> Response:
     except UniqueViolationError:
       pass # This doesn't matter.
     return web.Response(status=404)
+
+@routes.get("/upc/bulk/")
+@limiter.limit("30/minute")
+async def get_upc_bulk_aiohttp(request: Request) -> Response:
+  
+  upc_raw = request.query["upcs"]
+  total_requested = 0
+  good = []
+  try:
+    upc_list = upc_raw.split(",")
+    total_requested = len(upc_list)
+    for upc in upc_list:
+      if upc.isdigit():
+        try:
+          if len(str(upc)) == 8:
+            upc = convert_upce(upc)
+          if validate_upca(upc):
+            good.append(upc)
+        except Exception:
+          pass
+  except Exception:
+    return Response(status=400,body="error in parsing upc list")
+  records = await request.conn.fetch("SELECT * FROM Items WHERE upc = ANY($1);", good) # This is horrible and I hate it.
+  total_found = len(records)
+  upc_dict: dict[str,str] = {}
+  for record in records:
+    item = Item.from_record(record)
+    upc_dict[item.upc] = item.dump
+
+  misses = [upc for upc in good if upc not in upc_dict]
+  if misses:
+    try:
+      # Build the misses into a query
+      timestamp = math.floor(datetime.datetime.utcnow().timestamp())
+      args = [(upc, False, timestamp) for upc in misses]
+      await request.conn.executemany("""INSERT INTO Misses (UPC, Converted, Date) VALUES $1;""", args)
+    except Exception:
+      pass
+  packet = {
+    "requested": total_requested,
+    "found": total_found,
+    "items": upc_dict
+  }
+  return web.json_response(packet)
 
 @routes.get("/upc/list/")
 @limiter.limit("30/minute")
