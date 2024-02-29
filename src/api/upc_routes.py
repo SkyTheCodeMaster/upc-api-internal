@@ -60,6 +60,7 @@ async def get_upc_bulk_aiohttp(request: Request) -> Response:
   good = []
   try:
     upc_list = upc_raw.split(",")
+    upc_list = list(set(upc_list))
     total_requested = len(upc_list)
     for upc in upc_list:
       if upc.isdigit():
