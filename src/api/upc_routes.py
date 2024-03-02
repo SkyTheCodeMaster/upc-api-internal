@@ -5,7 +5,6 @@ import math
 import tomllib
 from typing import TYPE_CHECKING
 
-import asyncpg
 from aiohttp import web
 from aiohttp.web import Response
 from aiohttplimiter import Limiter, default_keyfunc
@@ -54,7 +53,6 @@ async def get_upc_aiohttp(request: Request) -> Response:
 @routes.get("/upc/bulk/")
 @limiter.limit("30/minute")
 async def get_upc_bulk_aiohttp(request: Request) -> Response:
-  
   upc_raw = request.query["upcs"]
   total_requested = 0
   good = []
@@ -198,6 +196,26 @@ async def get_validate(request: web.Request) -> web.Response:
     "ok": valid,
     "converted": converted
   }
+
+  return web.json_response(packet)
+
+@routes.get("/validate/bulk/")
+async def get_validate_bulk(request: web.Request) -> web.Response:
+  upc_raw = request.query["upcs"]
+  packet = {}
+  try:
+    upc_list = upc_raw.split(",")
+    upc_list = list(set(upc_list))
+    for upc in upc_list:
+      if upc.isdigit():
+        try:
+          if len(str(upc)) == 8:
+            upc = convert_upce(upc)
+          packet[upc] = validate_upca(upc)
+        except Exception:
+          pass
+  except Exception:
+    return Response(status=400,body="error in parsing upc list")
 
   return web.json_response(packet)
 
