@@ -55,6 +55,37 @@ paths:
           description: Successful operation
         '400':
           description: Invalid input
+  /upc/bulk/:
+    get:
+      tags:
+        - UPC
+      summary: Get bulk data for up to 50 UPCs
+      description: Returns bulk data for 50 UPCs, and processes them to ensure they are good. You can pass 50 real UPCs, and some invalid ones, and it will filter out the invalid ones.
+      operationId: upc.bulk
+      parameters:
+        - in: query
+          name: upcs
+          schema:
+            type: string
+          required: true
+          description: Comma separated UPCs
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BulkUPC'
+        '400':
+          description: Too many UPCs requested.
+
+  /upc/validate/{upc}:
+    get:
+      tags:
+        - UPC
+      summary: Test if a UPC is valid
+      description: Returns a boolean on if a UPC is valid or not.
+      operationId: upc.validate
 components:
   schemas:
     upc:

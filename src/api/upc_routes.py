@@ -71,6 +71,10 @@ async def get_upc_bulk_aiohttp(request: Request) -> Response:
           pass
   except Exception:
     return Response(status=400,body="error in parsing upc list")
+
+  if len(good) > 50:
+    return Response(status=400,body="More than 50 UPCs requested!")
+
   records = await request.conn.fetch("SELECT * FROM Items WHERE upc = ANY($1);", good) # This is horrible and I hate it.
   total_found = len(records)
   upc_dict: dict[str,str] = {}
@@ -179,26 +183,7 @@ async def post_upc(request: Request) -> Response:
       data.get("quantity_unit", None)
     )
     return web.Response(status=200)
-
-@routes.get("/validate/{upc:.*}")
-async def get_validate(request: web.Request) -> web.Response:
-  upc = request.match_info["upc"]
-  converted = False
-  try:
-    if len(str(upc)) == 8:
-      converted=True
-      upc = convert_upce(upc)
-    valid = validate_upca(upc)
-  except Exception:
-    valid = False
-
-  packet = {
-    "ok": valid,
-    "converted": converted
-  }
-
-  return web.json_response(packet)
-
+    
 @routes.get("/validate/bulk/")
 async def get_validate_bulk(request: web.Request) -> web.Response:
   upc_raw = request.query["upcs"]
@@ -216,6 +201,25 @@ async def get_validate_bulk(request: web.Request) -> web.Response:
           pass
   except Exception:
     return Response(status=400,body="error in parsing upc list")
+
+  return web.json_response(packet)
+
+@routes.get("/validate/{upc:.*}")
+async def get_validate(request: web.Request) -> web.Response:
+  upc = request.match_info["upc"]
+  converted = False
+  try:
+    if len(str(upc)) == 8:
+      converted=True
+      upc = convert_upce(upc)
+    valid = validate_upca(upc)
+  except Exception:
+    valid = False
+
+  packet = {
+    "ok": valid,
+    "converted": converted
+  }
 
   return web.json_response(packet)
 
@@ -247,6 +251,39 @@ async def get_upc_misses(request: Request) -> Response:
     "total": count,
     "returned": len(misses),
     "misses": misses
+  }
+
+  return web.json_response(out)
+
+@routes.get("/upc/search/")
+async def get_upc_search(request: Request) -> Response:
+  query = request.query
+
+  search_text = query.get("s",None)
+  if search_text is None:
+    return Response(status=400,text="pass s parameter!")
+
+  print(search_text)
+
+  try:
+    offset = int(query.get("offset","0"))
+  except ValueError:
+    return Response(status=400,text="offset must be integer!")
+  try:
+    limit = int(query.get("limit","50"))
+  except ValueError:
+    return Response(status=400,text="limit must be integer!")
+
+  item_records = await request.conn.fetch("SELECT * FROM Items WHERE Name ILIKE $1 LIMIT $2 OFFSET $3;", f"%{search_text}%", limit, offset)
+  count_record = await request.conn.fetchrow("SELECT COUNT(*) FROM Items;")
+  count = count_record.get("count")
+
+  items = [Item.from_record(record).dump for record in item_records]
+
+  out = {
+    "total": count,
+    "returned": len(items),
+    "items": items
   }
 
   return web.json_response(out)
