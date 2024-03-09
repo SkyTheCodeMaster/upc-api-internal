@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime
 import math
 import tomllib
+import urllib.parse
 from typing import TYPE_CHECKING
 
 from aiohttp import web
@@ -263,7 +264,7 @@ async def get_upc_search(request: Request) -> Response:
   if search_text is None:
     return Response(status=400,text="pass s parameter!")
 
-  print(search_text)
+  search_text = urllib.parse.unquote_plus(search_text)
 
   try:
     offset = int(query.get("offset","0"))
