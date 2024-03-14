@@ -37,12 +37,17 @@ async def get_upc(conn: asyncpg.Connection, cs: aiohttp.ClientSession, upc: str|
       return None
 
   tasks: list[asyncio.Task] = [asyncio.create_task(_run_handler(handler, cs, upc)) for handler in all_handlers]
-  await asyncio.gather(*tasks)
+  async with asyncio.timeout(3.0):
+    await asyncio.gather(*tasks)
+  
   for task in tasks:
-    result = task.result()
-    if result:
-      item = result
-      break
+    if task.done():
+      result = task.result()
+      if result:
+        item = result
+        break
+    else:
+      LOG.error(f"Task {task} didn't finish in time!")
 
   if item:
     # We're gonna try to insert into the database
