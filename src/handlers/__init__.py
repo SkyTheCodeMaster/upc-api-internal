@@ -8,9 +8,9 @@ from .upcitemdb import get_upcitemdb
 from .openfoodfacts import get_openfoodfacts
 
 all_handlers = [
-  get_openfoodfacts,
-  get_goupc,
-  get_nutritionix,
+  #get_openfoodfacts,
+  #get_goupc,
+  #get_nutritionix,
   get_upcdatabase,
   get_upcitemdb
 ]

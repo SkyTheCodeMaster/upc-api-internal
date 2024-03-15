@@ -28,26 +28,29 @@ async def get_upc(conn: asyncpg.Connection, cs: aiohttp.ClientSession, upc: str|
     return False
   async def _run_handler(handler, cs, upc):
     try:
-      LOG.info(f"[EXTERNAL] Attempting to get {upc} from {handler.__name__}...")
-      result = await handler(cs, upc)
-      if result:
-        LOG.info(f"[EXTERNAL] Failed to get {upc} from {handler.__name__}!")
+      async with asyncio.timeout(0.5):
+        LOG.info(f"[EXTERNAL] Attempting to get {upc} from {handler.__name__}...")
+        print("trying to run handler", handler.__name__)
+        result = await handler(cs, upc)
+        if result:
+          LOG.info(f"[EXTERNAL] Got result from {handler.__name__}!")
+          return result
+        else:
+          LOG.info(f"[EXTERNAL] Failed to get {upc} from {handler.__name__}!")
+          return None
     except Exception:
       LOG.exception(f"{handler.__name__} fail!")
       return None
 
   tasks: list[asyncio.Task] = [asyncio.create_task(_run_handler(handler, cs, upc)) for handler in all_handlers]
-  async with asyncio.timeout(3.0):
-    await asyncio.gather(*tasks)
-  
+  await asyncio.gather(*tasks)
+
   for task in tasks:
     if task.done():
       result = task.result()
       if result:
         item = result
         break
-    else:
-      LOG.error(f"Task {task} didn't finish in time!")
 
   if item:
     # We're gonna try to insert into the database

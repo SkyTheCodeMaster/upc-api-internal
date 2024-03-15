@@ -42,8 +42,11 @@ async def get_upcdatabase(cs: ClientSession, upc: Union[str,int]) -> False|Item:
         # We've found both, stop.
         break
 
-    quantity,quantity_name = split_size(size)
-
+    try:
+      quantity,quantity_name = split_size(size)
+    except Exception:
+      quantity,quantity_name = None,None
+      
     i = Item(
       upc = upc,
       name = name,

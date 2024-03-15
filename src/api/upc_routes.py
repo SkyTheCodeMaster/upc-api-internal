@@ -30,7 +30,7 @@ routes = web.RouteTableDef()
 @routes.get("/upc/{upc:\d+}")
 @limiter.limit("30/minute")
 async def get_upc_aiohttp(request: Request) -> Response:
-  
+  print("got request", request)
   upc = request.match_info["upc"]
   converted = False
   if len(str(upc)) == 8:
