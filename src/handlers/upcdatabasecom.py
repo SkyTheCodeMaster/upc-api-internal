@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 
   from aiohttp import ClientSession
 
-async def get_upcdatabase(cs: ClientSession, upc: Union[str,int]) -> False|Item:
+async def get_upcdatabasecom(cs: ClientSession, upc: Union[str,int]) -> False|Item:
   url = f"https://www.upcdatabase.com/item/{upc}"
 
   async with cs.get(url) as resp:

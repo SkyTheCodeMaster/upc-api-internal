@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 
 from utils.item import Item
 
+"GO UPC BANS AFTER 100 QUERIES"
+
 if TYPE_CHECKING:
   from typing import Union
   from bs4 import Tag

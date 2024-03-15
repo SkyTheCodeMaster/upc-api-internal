@@ -4,6 +4,8 @@ from typing import TYPE_CHECKING
 
 from utils.item import Item
 
+"OPEN FOOD FACTS SEEMS TO HAVE GONE DEFUNCT"
+
 if TYPE_CHECKING:
   from typing import Union
 

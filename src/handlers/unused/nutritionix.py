@@ -6,6 +6,8 @@ from typing import TYPE_CHECKING
 
 from utils.item import Item
 
+"POOR RATELIMIT HANDLING"
+
 if TYPE_CHECKING:
   from typing import Union
 

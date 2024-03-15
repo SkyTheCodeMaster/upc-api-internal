@@ -1,16 +1,16 @@
 # ruff: noqa: F401
 
-from .goupc import get_goupc
+from .foodbasics import get_foodbasics
 from .local import get_local
-from .nutritionix import get_nutritionix
-from .upcdatabase import get_upcdatabase
+from .metro import get_metro
+from .upcdatabasecom import get_upcdatabasecom
+from .upcdatabaseorg import get_upcdatabaseorg
 from .upcitemdb import get_upcitemdb
-from .openfoodfacts import get_openfoodfacts
 
 all_handlers = [
-  #get_openfoodfacts,
-  #get_goupc,
-  #get_nutritionix,
-  get_upcdatabase,
-  get_upcitemdb
+  get_metro, # Both name and quantity.
+  get_foodbasics, # Both name and quantity.
+  get_upcdatabasecom, # Sometimes quantity
+  get_upcitemdb, # Only name.
+  get_upcdatabaseorg, # Only name.
 ]
