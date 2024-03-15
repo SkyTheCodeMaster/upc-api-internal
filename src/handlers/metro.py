@@ -16,7 +16,11 @@ if TYPE_CHECKING:
 async def get_metro(cs: ClientSession, upc: Union[str,int]) -> False|Item:
   url = f"https://www.metro.ca/en/online-grocery/a/a/a/a/a/p/{upc}"
 
-  async with cs.get(url) as resp:
+  headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:120.0) Gecko/20100101 Firefox/120.0"
+  }
+
+  async with cs.get(url, headers=headers) as resp:
     # We need to process the raw html. Yikes lol
 
     html = await resp.text()

@@ -11,7 +11,6 @@ if TYPE_CHECKING:
 @middleware
 async def pg_pool_middleware(request: Request, handler):
   async with request.app.pool.acquire() as conn:
-    print("middleware running")
     conn: Connection
     request.conn = conn
     request.pool = request.app.pool
@@ -20,7 +19,6 @@ async def pg_pool_middleware(request: Request, handler):
     resp: Response = await handler(request)
     if resp is None:
       resp = Response(status=204)
-    print("middleware finished:",resp)
     resp.headers["Access-Control-Allow-Origin"] = "*"
     resp.headers["Access-Control-Allow-Methods"] = "GET, POST, OPTIONS"
     return resp
