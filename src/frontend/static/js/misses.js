@@ -28,13 +28,22 @@ function generate_table_row(miss) {
   button_create.classList.add("button", "is-link", "is-small");
   button_create.onclick = function() {window.location="/publish#"+miss["upc"];}
   button_create.innerText = "Create";
+
+  let td_button_google = document.createElement("td");
+  let button_google = document.createElement("a");
+  button_google.classList.add("button", "is-success", "is-small");
+  button_google.setAttribute("href", format("https://www.google.com/search?q={0}", miss["upc"]));
+  button_google.setAttribute("target", "_blank");
+  button_google.innerText = "Google";
   
   // Nest elements
+  td_button_google.appendChild(button_google);
   td_button_create.appendChild(button_create);
   tr.append(td_upc);
   tr.append(td_converted);
   tr.append(td_date);
   tr.append(td_button_create);
+  tr.append(td_button_google);
 
   return tr;
 }

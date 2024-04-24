@@ -22,6 +22,7 @@ if TYPE_CHECKING:
 with open("config.toml") as f:
   config = tomllib.loads(f.read())
   exempt_ips = config["srv"]["ratelimit_exempt"]
+  local_only = config["data-source"]["local_only"]
 
 limiter = Limiter(default_keyfunc, exempt_ips)
 
@@ -40,7 +41,7 @@ async def get_upc_aiohttp(request: Request) -> Response:
   if not validate_upca(upc):
     return web.Response(status=400,body=f"Invalid UPC-A.;Converted:{converted}")
 
-  item = await get_upc(request.pool, request.session, upc)
+  item = await get_upc(request.pool, request.session, upc, local_only=local_only)
   if item:
     return web.json_response(item.dump)
   else:

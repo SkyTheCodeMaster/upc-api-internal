@@ -12,7 +12,7 @@ if TYPE_CHECKING:
   from aiohttp import ClientSession
 
 async def get_openfoodfacts(cs: ClientSession, upc: Union[str,int]) -> False|Item:
-  url = f"https://world.openfoodfacts.net/api/v2/product/{upc}"
+  url = f"https://world.openfoodfacts.org/api/v2/product/{upc}"
 
   async with cs.get(url) as resp:
     # We need to process the raw html. Yikes lol
