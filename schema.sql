@@ -1,23 +1,10 @@
-SELECT 'CREATE DATABASE upc_database' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'upc_database')\gexec
+SELECT 'CREATE DATABASE inventory_database_internal_items' WHERE NOT EXISTS (SELECT FROM pg_database WHERE datname = 'inventory_database_internal_items')\gexec
 
-\c upc_database
+\c inventory_database_internal_items
 
 CREATE TABLE IF NOT EXISTS Items (
   upc TEXT PRIMARY KEY,
   name TEXT,
   quantity TEXT,
   quantityunit TEXT
-);
-
-CREATE TABLE IF NOT EXISTS Backups (
-  pasteid TEXT,
-  date BIGINT PRIMARY KEY
-);
-
--- This is for item misses, so a human can look through
--- and manually enter item details.
-CREATE TABLE IF NOT EXISTS Misses (
-  upc TEXT PRIMARY KEY,
-  converted BOOLEAN, -- Whether or not the UPC was originally a UPC-E.
-  date BIGINT
 );
