@@ -10,7 +10,6 @@ from aiohttplimiter import Limiter, default_keyfunc
 
 from utils.get_item import get_upc
 from utils.item import Item
-from utils.upc import convert_upce, validate_upca
 
 if TYPE_CHECKING:
   from utils.extra_request import Request
