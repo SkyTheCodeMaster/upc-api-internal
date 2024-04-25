@@ -79,13 +79,6 @@
       button.classList.add("is-loading");
       button.setAttribute("disabled", true);
       upc = document.getElementById("upc-input").value;
-      if (upc.length != 8 && upc.length != 12) {
-        create_popup("Invalid length UPC!",true);
-        button.classList.remove("is-loading");
-        button.removeAttribute("disabled");
-        document.getElementById("upc-input").value = "";
-        return;
-      }
       // Now we want to try and get it from the API.
       var URL = "/api/upc/" + upc;
 

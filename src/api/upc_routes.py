@@ -22,7 +22,7 @@ limiter = Limiter(default_keyfunc, exempt_ips)
 
 routes = web.RouteTableDef()
 
-@routes.get("/upc/{upc:\d+}")
+@routes.get("/upc/{upc:.*}")
 @limiter.limit("30/minute")
 async def get_upc_aiohttp(request: Request) -> Response:
   print("got request", request)
