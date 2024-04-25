@@ -28,7 +28,7 @@ async def get_upc_aiohttp(request: Request) -> Response:
   print("got request", request)
   upc = request.match_info["upc"]
 
-  item = await get_upc(request.pool, request.session, upc)
+  item = await get_upc(request.pool, upc)
   if item:
     return web.json_response(item.dump)
   else:
