@@ -17,7 +17,6 @@ if TYPE_CHECKING:
 with open("config.toml") as f:
   config = tomllib.loads(f.read())
   exempt_ips = config["srv"]["ratelimit_exempt"]
-  local_only = config["data-source"]["local_only"]
 
 limiter = Limiter(default_keyfunc, exempt_ips)
 
@@ -29,7 +28,7 @@ async def get_upc_aiohttp(request: Request) -> Response:
   print("got request", request)
   upc = request.match_info["upc"]
 
-  item = await get_upc(request.pool, request.session, upc, local_only=local_only)
+  item = await get_upc(request.pool, request.session, upc)
   if item:
     return web.json_response(item.dump)
   else:
@@ -40,27 +39,17 @@ async def get_upc_aiohttp(request: Request) -> Response:
 async def get_upc_bulk_aiohttp(request: Request) -> Response:
   upc_raw = request.query["upcs"]
   total_requested = 0
-  good = []
   try:
     upc_list = upc_raw.split(",")
     upc_list = list(set(upc_list))
     total_requested = len(upc_list)
-    for upc in upc_list:
-      if upc.isdigit():
-        try:
-          if len(str(upc)) == 8:
-            upc = convert_upce(upc)
-          if validate_upca(upc):
-            good.append(upc)
-        except Exception:
-          pass
   except Exception:
     return Response(status=400,body="error in parsing upc list")
 
-  if len(good) > 50:
+  if len(upc_list) > 50:
     return Response(status=400,body="More than 50 UPCs requested!")
 
-  records = await request.conn.fetch("SELECT * FROM Items WHERE upc = ANY($1);", good) # This is horrible and I hate it.
+  records = await request.conn.fetch("SELECT * FROM Items WHERE upc = ANY($1);", upc_list) # This is horrible and I hate it.
   total_found = len(records)
   upc_dict: dict[str,str] = {}
   for record in records:
