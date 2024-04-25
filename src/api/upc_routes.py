@@ -99,7 +99,7 @@ async def post_upc(request: Request) -> Response:
   if "upc" not in data:
     return web.Response(status=400,body="upc not passed")
   
-  await request.conn.execute(
+  response = await request.conn.execute(
     """
       INSERT INTO
         Items (upc, name, quantity, quantityunit)
@@ -117,7 +117,11 @@ async def post_upc(request: Request) -> Response:
     data.get("quantity", None),
     data.get("quantity_unit", None)
   )
-  return web.Response(status=200)
+  if response == "INSERT 0 1":
+    return Response()
+  else:
+    print("Failed SQL",response)
+    return Response(status=500)
 
 @routes.get("/upc/search/")
 async def get_upc_search(request: Request) -> Response:
