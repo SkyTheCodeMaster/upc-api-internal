@@ -8,7 +8,6 @@ from aiohttp import web
 from aiohttp.web import Response
 from aiohttplimiter import Limiter, default_keyfunc
 
-from handlers.local import get_local
 from utils.get_item import get_upc
 from utils.item import Item
 from utils.upc import convert_upce, validate_upca
@@ -111,55 +110,26 @@ async def post_upc(request: Request) -> Response:
   data: dict = await request.json()
   if "upc" not in data:
     return web.Response(status=400,body="upc not passed")
-  upc = data["upc"]
-  converted = False
-  if len(str(upc)) == 8:
-    converted=True
-    upc = convert_upce(upc)
-  if not validate_upca(upc):
-    return web.Response(status=400,body=f"Invalid UPC-A.;Converted:{converted}")
   
-  local_item = await get_local(request.conn, data["upc"])
-  if local_item:
-    await request.conn.execute(
-      """
-        INSERT INTO
-          Items (upc, name, quantity, quantityunit)
-        VALUES
-          ($1, $2, $3, $4)
-        ON CONFLICT (upc)
-        DO
-          UPDATE SET
-            name = $2,
-            quantity = $3,
-            quantityunit = $4;
-        """,
-      data["upc"],
-      data.get("name", local_item.name),
-      data.get("quantity", local_item.quantity),
-      data.get("quantity_unit", local_item.quantity_unit)
-    )
-    return web.Response(status=200)
-  else:
-    await request.conn.execute(
-      """
-        INSERT INTO
-          Items (upc, name, quantity, quantityunit)
-        VALUES
-          ($1, $2, $3, $4)
-        ON CONFLICT (upc)
-        DO
-          UPDATE SET
-            name = $2,
-            quantity = $3,
-            quantityunit = $4;
-        """,
-      data["upc"],
-      data.get("name", None),
-      data.get("quantity", None),
-      data.get("quantity_unit", None)
-    )
-    return web.Response(status=200)
+  await request.conn.execute(
+    """
+      INSERT INTO
+        Items (upc, name, quantity, quantityunit)
+      VALUES
+        ($1, $2, $3, $4)
+      ON CONFLICT (upc)
+      DO
+        UPDATE SET
+          name = $2,
+          quantity = $3,
+          quantityunit = $4;
+      """,
+    data["upc"],
+    data.get("name", None),
+    data.get("quantity", None),
+    data.get("quantity_unit", None)
+  )
+  return web.Response(status=200)
 
 @routes.get("/upc/search/")
 async def get_upc_search(request: Request) -> Response:
