@@ -13,7 +13,6 @@ import asyncpg
 from utils.get_routes import get_module
 from utils.logger import CustomWebLogger
 from utils.pg_pool_middleware import pg_pool_middleware
-import aiohttp_cors
 
 LOGFMT = "[%(filename)s][%(asctime)s][%(levelname)s] %(message)s"
 LOGDATEFMT = "%Y/%m/%d-%H:%M:%S"

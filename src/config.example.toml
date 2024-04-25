@@ -1,14 +1,5 @@
 devmode = false
 
-[data-source]
-  local_only = false
-
-[data-source.nutritionix]
-  app_id = "nutritionix app id"
-  app_key = "nutritionix key"
-[data-source.upcdatabaseorg]
-  key = "upcdatabase key"
-
 [postgres]
   url = "psql url"
   password = "password"
@@ -27,20 +18,6 @@ devmode = false
 
 [pages]
   frontend_version = "2.0.0"
-
-[pages.administration]
-  hash = [
-    ""
-  ]
-  hash_iters = 500_000
-
-[backup]
-  run_nightlys = false # Whether or not to run the nightly tasks at all.
-                       # This is useful for when a development instance and a production
-                       # instance are ran off of the same database.
-  url = "https://cool.paste.site/api/paste/create_query/"
-  api_key = "paste key"
-  backup_file = "/tmp/upc_database_export.csv"
 
 [api]
 [api.uploading]
