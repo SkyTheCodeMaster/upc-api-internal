@@ -26,7 +26,9 @@ routes = web.RouteTableDef()
 @routes.get("/upc/bulk/")
 @limiter.limit("30/minute")
 async def get_upc_bulk_aiohttp(request: Request) -> Response:
-    upc_raw = request.query["upcs"]
+    upc_raw = request.query.get("upcs", None)
+    if upc_raw is None:
+      return Response(status=400,body="must pass upcs query!")
     total_requested = 0
     try:
         upc_list = upc_raw.split(",")
