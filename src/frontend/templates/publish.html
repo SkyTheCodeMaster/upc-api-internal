@@ -34,6 +34,11 @@
       button.classList.add("is-loading");
       button.setAttribute("disabled", true);
       var upc = document.getElementById("upc-input").value;
+      if (!upc) {
+        let popup_id = create_popup("Press the Check UPC button, UPC is empty!");
+        setTimeout(function() {remove_popup(popup_id)}, 5000);
+        return;
+      }
       // Now we want to try and get it from the API.
       var URL = "/api/upc/" + upc;
 
@@ -78,6 +83,9 @@
       button.classList.add("is-loading");
       button.setAttribute("disabled", true);
       var upc = document.getElementById("upc-details-upc").innerText.substring(5);
+      if (!upc) {
+        upc = document.getElementById("upc-input").value
+      }
       var name = document.getElementById("upc-details-name").value;
       var quantity = document.getElementById("upc-details-quan").value;
       var quantity_unit = document.getElementById("upc-details-quan-unit").value;
